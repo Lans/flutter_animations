@@ -3,16 +3,21 @@ import 'package:flutter/material.dart';
 class TweenAnimationWidget extends AnimatedWidget {
   TweenAnimationWidget({Key key, Animation<double> animation})
       : super(key: key, listenable: animation);
+  static final _opacityTween = Tween<double>(begin: 0.1, end: 1);
+  static final _sizeTween = Tween<double>(begin: 0, end: 300);
 
   @override
   Widget build(BuildContext context) {
     final Animation<double> animation = listenable;
-    return Center(
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 10),
-        color: Colors.orange,
-        height: animation.value,
-        width: animation.value,
+    return Opacity(
+      opacity: _opacityTween.evaluate(animation),
+      child: Center(
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: 10),
+          color: Colors.orange,
+          height: _sizeTween.evaluate(animation),
+          width: _sizeTween.evaluate(animation),
+        ),
       ),
     );
   }
@@ -39,7 +44,14 @@ class TweenWidgetState extends State<TweenWidget>
       duration: Duration(seconds: 5),
     );
     animation =
-        Tween<double>(begin: 100, end: 200).animate(animationController);
+        CurvedAnimation(parent: animationController, curve: Curves.easeIn)
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              animationController.reverse();
+            } else if (status == AnimationStatus.dismissed) {
+              animationController.forward();
+            }
+          });
     animationController.forward();
   }
 
